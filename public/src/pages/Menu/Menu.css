@@ -1,0 +1,239 @@
+.menu-page-new {
+  min-height: 100vh;
+  background-color: var(--primary-dark);
+  color: var(--text-light);
+  padding-bottom: 5rem;
+}
+
+/* Onglets Catégories */
+.menu-tabs-container {
+  background-color: var(--primary-dark);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: sticky;
+  top: 80px;
+  z-index: 40;
+  overflow-x: auto;
+}
+
+.menu-tabs {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+}
+
+.menu-tab {
+  flex: 1;
+  min-width: 120px;
+  padding: 1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: none;
+  color: var(--text-gray-light);
+  cursor: pointer;
+}
+
+.menu-tab:hover {
+  color: var(--accent-gold);
+}
+
+.menu-tab.active {
+  border-bottom-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background-color: transparent;
+}
+
+/* Menu Main Content */
+.menu-main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 3rem;
+}
+
+.menu-content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 3rem;
+}
+
+.menu-section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  text-transform: none;
+  color: var(--white);
+  font-family: 'Playfair Display', serif;
+}
+
+.menu-section-title::after {
+  display: none;
+}
+
+.menu-items-count {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Menu Items Grid */
+.menu-items-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 1024px) {
+  .menu-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+}
+
+.menu-item-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
+  border-radius: 0;
+  transition: all 0.4s ease;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.menu-item-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: var(--accent-gold);
+}
+
+.menu-item-content {
+  flex: 1;
+  padding-right: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.menu-item-number {
+  font-size: 0.625rem;
+  color: var(--text-gray);
+  font-family: monospace;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  font-weight: 300;
+}
+
+.menu-item-info {
+  flex: 1;
+}
+
+.menu-item-name {
+  font-weight: 400;
+  color: var(--white);
+  text-transform: none;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+  font-family: 'Playfair Display', serif;
+}
+
+.menu-item-card:hover .menu-item-name {
+  color: var(--accent-gold);
+}
+
+.menu-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-gray);
+  font-style: italic;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 300;
+}
+
+.menu-item-footer {
+  display: flex;
+  align-items: center;
+}
+
+.menu-item-price {
+  font-weight: 300;
+  color: var(--accent-gold);
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+/* Options supplémentaires */
+.menu-options {
+  margin-top: 4rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.menu-options-title {
+  font-weight: 300;
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  color: var(--text-gray);
+  letter-spacing: 0.3em;
+  margin-bottom: 1rem;
+}
+
+.menu-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .menu-options-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.menu-option-item {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-gray-light);
+  font-weight: 300;
+}
+
+.menu-option-item b {
+  color: var(--white);
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .menu-tabs-container {
+    top: 70px;
+  }
+
+  .menu-main-content {
+    padding: 2rem 1rem;
+  }
+
+  .menu-section-title {
+    font-size: 1.75rem;
+  }
+
+  .menu-tab {
+    font-size: 0.625rem;
+    padding: 0.875rem 0.5rem;
+  }
+}
