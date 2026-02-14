@@ -1,24 +1,37 @@
 <?php
 /**
  * API pour l'authentification et l'inscription
+ * Adapté aux tables : surfeur (login, password...), localite (cp_localite, nom_localite)
  */
 
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/cors.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 header('Content-Type: application/json; charset=utf-8');
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
+$hours = require __DIR__ . '/../config/hours.php';
+$closedMessage = 'Inscription et connexion disponibles uniquement pendant les heures d\'ouverture. Consultez nos horaires sur la page « Nous Trouver ».';
+
 try {
     switch ($method) {
         case 'POST':
             if ($action === 'register') {
-                // Inscription
+                if (!$hours['open']) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => $closedMessage], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                // Inscription -> table surfeur
                 $data = json_decode(file_get_contents('php://input'), true);
                 
-                // Validation
                 $errors = [];
                 if (empty($data['identifiant'])) {
                     $errors['identifiant'] = 'L\'identifiant est requis';
@@ -48,9 +61,9 @@ try {
                     exit;
                 }
                 
-                // Vérifier si l'identifiant existe déjà
+                // Vérifier si le login existe déjà (table surfeur)
                 $existing = Database::query(
-                    "SELECT id FROM client WHERE identifiant = ?",
+                    "SELECT id FROM surfeur WHERE login = ?",
                     [$data['identifiant']]
                 )->fetch();
                 
@@ -63,9 +76,9 @@ try {
                     exit;
                 }
                 
-                // Vérifier la localité
+                // Vérifier la localité (cp_localite, nom_localite)
                 $localite = Database::query(
-                    "SELECT id FROM localite WHERE code_postal = ? AND nom = ?",
+                    "SELECT id_localite FROM localite WHERE cp_localite = ? AND nom_localite = ?",
                     [$data['codePostal'], $data['localite']]
                 )->fetch();
                 
@@ -78,25 +91,28 @@ try {
                     exit;
                 }
                 
-                // Créer le client
+                // Créer l'utilisateur dans surfeur
                 $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
+                $adresse = trim(($data['numero'] ?? '') . ' ' . ($data['rue'] ?? ''));
+                if (empty($adresse)) {
+                    $adresse = ($data['rue'] ?? '');
+                }
                 
                 Database::query(
-                    "INSERT INTO client (identifiant, password, nom, prenom, numero, rue, code_postal, localite, adresse_email, telephone, personne_contact, remarque) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO surfeur (login, password, nom, prenom, adresse, cp, localite, mail, numero, contact, rem) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [
                         $data['identifiant'],
                         $passwordHash,
                         $data['nom'],
                         $data['prenom'],
-                        $data['numero'] ?? null,
-                        $data['rue'] ?? null,
+                        $adresse ?: '',
                         $data['codePostal'],
                         $data['localite'],
-                        $data['adresseEmail'] ?? null,
-                        $data['telephone'] ?? null,
-                        $data['personneContact'] ?? null,
-                        $data['remarque'] ?? null
+                        $data['adresseEmail'] ?? '',
+                        $data['telephone'] ?? '',
+                        $data['personneContact'] ?? '',
+                        $data['remarque'] ?? ''
                     ]
                 );
                 
@@ -106,7 +122,12 @@ try {
                 ], JSON_UNESCAPED_UNICODE);
                 
             } elseif ($action === 'login') {
-                // Connexion
+                if (!$hours['open']) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => $closedMessage], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                // Connexion -> table surfeur
                 $data = json_decode(file_get_contents('php://input'), true);
                 
                 if (empty($data['identifiant']) || empty($data['password'])) {
@@ -118,12 +139,12 @@ try {
                     exit;
                 }
                 
-                $client = Database::query(
-                    "SELECT id, identifiant, password, nom, prenom FROM client WHERE identifiant = ? AND actif = 1",
+                $user = Database::query(
+                    "SELECT id, login, password, nom, prenom FROM surfeur WHERE login = ?",
                     [$data['identifiant']]
                 )->fetch();
                 
-                if (!$client || !password_verify($data['password'], $client['password'])) {
+                if (!$user || !password_verify($data['password'], $user['password'])) {
                     http_response_code(401);
                     echo json_encode([
                         'success' => false,
@@ -132,13 +153,93 @@ try {
                     exit;
                 }
                 
-                // Ne pas renvoyer le mot de passe
-                unset($client['password']);
+                unset($user['password']);
+                // Aligner les clés attendues par le frontend (identifiant, nom, prenom)
+                $user['identifiant'] = $user['login'];
+                unset($user['login']);
                 
                 echo json_encode([
                     'success' => true,
-                    'user' => $client
+                    'user' => $user
                 ], JSON_UNESCAPED_UNICODE);
+                
+            } elseif ($action === 'forgot_password') {
+                if (!$hours['open']) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => $closedMessage], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                // Mot de passe oublié : recherche par email, génération nouveau mdp, envoi par email
+                $data = json_decode(file_get_contents('php://input'), true);
+                
+                if (empty($data['email'])) {
+                    http_response_code(400);
+                    echo json_encode([
+                        'success' => false,
+                        'error' => 'Adresse email requise'
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                
+                $user = Database::query(
+                    "SELECT id, login, mail, nom, prenom FROM surfeur WHERE mail = ?",
+                    [trim($data['email'])]
+                )->fetch();
+                
+                // Toujours retourner le même message (sécurité : éviter énumération d'emails)
+                $response = [
+                    'success' => true,
+                    'message' => 'Si un compte existe avec cette adresse email, vous recevrez un nouveau mot de passe.'
+                ];
+                
+                if ($user && !empty($user['mail'])) {
+                    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    $newPassword = '';
+                    for ($i = 0; $i < 8; $i++) {
+                        $newPassword .= $chars[random_int(0, strlen($chars) - 1)];
+                    }
+                    
+                    $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
+                    Database::query("UPDATE surfeur SET password = ? WHERE id = ?", [$passwordHash, $user['id']]);
+                    
+                    $mailFile = __DIR__ . '/../config/mail.php';
+                    $mailConfig = require (file_exists($mailFile) ? $mailFile : __DIR__ . '/../config/mail.example.php');
+                    $body = "Bonjour " . ($user['prenom'] ?? $user['nom']) . ",\n\n"
+                        . "Vous avez demandé la récupération de votre mot de passe.\n\n"
+                        . "Identifiant : " . $user['login'] . "\n"
+                        . "Nouveau mot de passe : " . $newPassword . "\n\n"
+                        . "Connectez-vous avec ces identifiants puis modifiez votre mot de passe si vous le souhaitez.\n\n"
+                        . "— Pizza Service Namur";
+                    
+                    $sent = false;
+                    if (!empty($mailConfig['smtp_username']) && !empty($mailConfig['smtp_password'])) {
+                        $mail = new PHPMailer(true);
+                        try {
+                            $mail->CharSet = 'UTF-8';
+                            $mail->isSMTP();
+                            $mail->Host       = $mailConfig['smtp_host'];
+                            $mail->SMTPAuth   = true;
+                            $mail->Username   = $mailConfig['smtp_username'];
+                            $mail->Password   = $mailConfig['smtp_password'];
+                            $mail->SMTPSecure = $mailConfig['smtp_secure'];
+                            $mail->Port       = $mailConfig['smtp_port'];
+                            $mail->setFrom($mailConfig['from_email'], $mailConfig['from_name']);
+                            $mail->addAddress($user['mail']);
+                            $mail->addReplyTo($mailConfig['reply_to']);
+                            $mail->Subject = 'Pizza Service Namur - Récupération de mot de passe';
+                            $mail->Body    = $body;
+                            $mail->send();
+                            $sent = true;
+                        } catch (Exception $e) {
+                            error_log('Email mot de passe oublié: ' . $mail->ErrorInfo);
+                        }
+                    } else {
+                        $headers = "From: " . $mailConfig['from_email'] . "\r\nReply-To: " . $mailConfig['reply_to'] . "\r\nContent-Type: text/plain; charset=UTF-8\r\n";
+                        $sent = @mail($user['mail'], 'Pizza Service Namur - Récupération de mot de passe', $body, $headers);
+                    }
+                }
+                
+                echo json_encode($response, JSON_UNESCAPED_UNICODE);
                 
             } else {
                 http_response_code(400);
@@ -151,7 +252,6 @@ try {
             
         case 'GET':
             if ($action === 'localites') {
-                // Récupérer les localités par code postal
                 $codePostal = $_GET['code_postal'] ?? '';
                 
                 if (empty($codePostal)) {
@@ -164,7 +264,7 @@ try {
                 }
                 
                 $localites = Database::query(
-                    "SELECT nom FROM localite WHERE code_postal = ? AND actif = 1 ORDER BY nom",
+                    "SELECT nom_localite FROM localite WHERE cp_localite = ? ORDER BY nom_localite",
                     [$codePostal]
                 )->fetchAll(PDO::FETCH_COLUMN);
                 

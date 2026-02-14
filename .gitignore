@@ -36,3 +36,4 @@ lerna-debug.log*
 # PHP
 vendor/
 .env
+config/mail.php

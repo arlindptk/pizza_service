@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -30,9 +31,11 @@ function AppContent() {
 
 function App() {
   return (
-    <CartProvider>
-      <AppContent />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <AppContent />
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

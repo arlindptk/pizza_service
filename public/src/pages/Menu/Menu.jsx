@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Pizza, Utensils, Baby, Salad, Dessert, Coffee, Settings } from 'lucide-react';
+import { Pizza, Utensils, Baby, Salad, Dessert, Coffee, Settings, Plus } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import './Menu.css';
 
 const Menu = () => {
-  const [activeTab, setActiveTab] = useState('Pizzas');
+  const { isAuthenticated } = useAuth();
+  const { addToCart } = useCart();
   const [menuData, setMenuData] = useState({});
+  const categories = Object.keys(menuData);
+  const [activeTab, setActiveTab] = useState(categories[0] || 'Pizzas');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -27,12 +32,11 @@ const Menu = () => {
         
         if (result.success) {
           if (Object.keys(result.data).length === 0) {
-            console.warn('Menu vide depuis l\'API, utilisation des données statiques');
             const { MENU_DATA } = await import('../../data/menuData');
             setMenuData(MENU_DATA);
-            setError('Menu vide dans la base de données. Utilisation des données par défaut.');
           } else {
             setMenuData(result.data);
+            setError(null);
           }
         } else {
           throw new Error(result.error || result.message || 'Erreur inconnue');
@@ -56,7 +60,20 @@ const Menu = () => {
     fetchMenu();
   }, []);
 
-  const categories = Object.keys(menuData);
+  // Mettre à jour activeTab quand les catégories sont chargées
+  React.useEffect(() => {
+    if (categories.length > 0 && !categories.includes(activeTab)) {
+      setActiveTab(categories[0]);
+    }
+  }, [categories.join(',')]);
+
+  const PIZZA_SIZES = [
+    { label: '30cm', supplement: 0 },
+    { label: '40cm', supplement: 1.5 },
+    { label: '50cm', supplement: 2.5 },
+  ];
+
+  const [pizzaSizeModal, setPizzaSizeModal] = useState(null); // { item, idx } ou null
 
   const getCategoryIcon = (category) => {
     switch (category) {
@@ -67,16 +84,38 @@ const Menu = () => {
       case 'Enfants':
         return <Baby size={16} />;
       case 'Salade':
+      case 'Salades':
         return <Salad size={16} />;
       case 'Dessert':
+      case 'Desserts':
         return <Dessert size={16} />;
       case 'Boisson':
+      case 'Boissons':
         return <Coffee size={16} />;
       case 'Options':
+      case 'Suppléments':
         return <Settings size={16} />;
       default:
         return null;
     }
+  };
+
+  const handleAddPizza = (item, idx) => {
+    setPizzaSizeModal({ item, idx });
+  };
+
+  const handleConfirmPizzaSize = (size) => {
+    if (!pizzaSizeModal) return;
+    const { item, idx } = pizzaSizeModal;
+    const finalPrice = item.price + size.supplement;
+    addToCart({
+      ...item,
+      id: `pizza-${item.id || idx}-${Date.now()}`,
+      price: finalPrice,
+      size: size.label,
+      basePrice: item.price,
+    });
+    setPizzaSizeModal(null);
   };
 
   return (
@@ -113,12 +152,12 @@ const Menu = () => {
         )}
 
         {error && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--accent-gold)' }}>
+          <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
             {error}
           </div>
         )}
 
-        {!loading && !error && menuData[activeTab] && (
+        {!loading && menuData[activeTab] && menuData[activeTab].length > 0 && (
           <div className="menu-items-grid">
             {menuData[activeTab].map((item, idx) => (
             <div
@@ -137,6 +176,16 @@ const Menu = () => {
 
               <div className="menu-item-footer">
                 <span className="menu-item-price">{item.price.toFixed(2)}€</span>
+                {isAuthenticated && (
+                  <button
+                    className="menu-item-add-btn"
+                    onClick={() => activeTab === 'Pizzas' ? handleAddPizza(item, idx) : addToCart({ ...item, id: (item.id || idx) + '-' + Date.now() })}
+                    title="Ajouter au panier"
+                  >
+                    <Plus size={18} />
+                    Ajouter
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -148,22 +197,57 @@ const Menu = () => {
           <div className="menu-options">
             <h4 className="menu-options-title">Options supplémentaires</h4>
             <div className="menu-options-grid">
-              <div className="menu-option-item">
-                <span>Suppl. Brocoli</span>
-                <b>2.00€</b>
+              {[
+                { name: 'Suppl. Brocoli', price: 2 },
+                { name: 'Suppl. Bolo', price: 2 },
+                { name: 'Pâte Fine', price: 0 },
+                { name: 'Ail / Piment', price: 0 },
+              ].map((opt, i) => (
+                isAuthenticated ? (
+                  <button
+                    key={i}
+                    className="menu-option-item"
+                    onClick={() => addToCart({ ...opt, id: `opt-${i}-${Date.now()}`, desc: '' })}
+                    title="Ajouter au panier"
+                  >
+                    <span>{opt.name}</span>
+                    <b>{opt.price > 0 ? `${opt.price.toFixed(2)}€` : 'Offert'}</b>
+                  </button>
+                ) : (
+                  <div key={i} className="menu-option-item menu-option-item-disabled">
+                    <span>{opt.name}</span>
+                    <b>{opt.price > 0 ? `${opt.price.toFixed(2)}€` : 'Offert'}</b>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Modal choix taille pizza */}
+        {pizzaSizeModal && (
+          <div className="pizza-size-overlay" onClick={() => setPizzaSizeModal(null)}>
+            <div className="pizza-size-modal" onClick={(e) => e.stopPropagation()}>
+              <h4>Choisir la taille</h4>
+              <p className="pizza-size-modal-name">{pizzaSizeModal.item.name}</p>
+              <div className="pizza-size-options">
+                {PIZZA_SIZES.map((size) => (
+                  <button
+                    key={size.label}
+                    className="pizza-size-option"
+                    onClick={() => handleConfirmPizzaSize(size)}
+                  >
+                    <span>{size.label}</span>
+                    <span>
+                      {(pizzaSizeModal.item.price + size.supplement).toFixed(2)}€
+                      {size.supplement > 0 && <small> (+{size.supplement.toFixed(2)}€)</small>}
+                    </span>
+                  </button>
+                ))}
               </div>
-              <div className="menu-option-item">
-                <span>Suppl. Bolo</span>
-                <b>2.00€</b>
-              </div>
-              <div className="menu-option-item">
-                <span>Pâte Fine</span>
-                <b>Offert</b>
-              </div>
-              <div className="menu-option-item">
-                <span>Ail / Piment</span>
-                <b>Offert</b>
-              </div>
+              <button className="pizza-size-cancel" onClick={() => setPizzaSizeModal(null)}>
+                Annuler
+              </button>
             </div>
           </div>
         )}

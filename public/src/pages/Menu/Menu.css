@@ -167,6 +167,8 @@
 .menu-item-footer {
   display: flex;
   align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
 
 .menu-item-price {
@@ -174,6 +176,33 @@
   color: var(--accent-gold);
   white-space: nowrap;
   font-size: 0.875rem;
+}
+
+.menu-item-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark);
+  background: var(--accent-gold);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.menu-item-add-btn:hover {
+  background: #d4a84b;
+  transform: scale(1.02);
+}
+
+.menu-item-add-btn:active {
+  transform: scale(0.98);
 }
 
 /* Options supplémentaires */
@@ -210,13 +239,127 @@
 .menu-option-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: var(--text-gray-light);
   font-weight: 300;
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-size: inherit;
+}
+
+.menu-option-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-gold);
+  color: var(--white);
+}
+
+.menu-option-item-disabled {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.7;
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
 }
 
 .menu-option-item b {
   color: var(--white);
   font-weight: 400;
+}
+
+/* Modal choix taille pizza */
+.pizza-size-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.pizza-size-modal {
+  background: var(--primary-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  max-width: 320px;
+  width: 100%;
+}
+
+.pizza-size-modal h4 {
+  font-size: 0.75rem;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-gray);
+  margin-bottom: 0.5rem;
+}
+
+.pizza-size-modal-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--white);
+  margin-bottom: 1.5rem;
+}
+
+.pizza-size-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.pizza-size-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.pizza-size-option:hover {
+  border-color: var(--accent-gold);
+  background: rgba(212, 168, 75, 0.1);
+}
+
+.pizza-size-option span:last-child {
+  color: var(--accent-gold);
+}
+
+.pizza-size-option small {
+  font-size: 0.7rem;
+  color: var(--text-gray);
+  font-weight: 300;
+}
+
+.pizza-size-cancel {
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-gray);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pizza-size-cancel:hover {
+  border-color: var(--text-gray);
+  color: var(--white);
 }
 
 @media (max-width: 768px) {

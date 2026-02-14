@@ -1,11 +1,14 @@
 /**
  * Configuration de l'API
+ * En dev (Vite) : /api est proxyfié vers localhost:8000
+ * En prod : utiliser VITE_API_URL ou même origine
  */
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const isDev = import.meta.env.DEV;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (isDev ? '' : 'http://localhost:8000');
+export const API_PATH = '/api';
 
 export const API_ENDPOINTS = {
-  MENU: `${API_BASE_URL}/menu.php`,
-  AUTH: `${API_BASE_URL}/auth.php`,
-  TEST: `${API_BASE_URL}/test.php`,
-  DEBUG: `${API_BASE_URL}/debug.php`,
+  MENU: `${API_BASE_URL}${API_PATH}/menu.php`,
+  AUTH: `${API_BASE_URL}${API_PATH}/auth.php`,
+  HOURS: `${API_BASE_URL}${API_PATH}/hours.php`,
 };

@@ -32,7 +32,10 @@ const Cart = () => {
               {cart.map((item) => (
                 <div key={item.id} className="cart-item">
                   <div className="cart-item-info">
-                    <p className="cart-item-name">{item.name}</p>
+                    <p className="cart-item-name">
+                      {item.name}
+                      {item.size && <span className="cart-item-size"> ({item.size})</span>}
+                    </p>
                     <p className="cart-item-price">{item.price.toFixed(2)}€</p>
                   </div>
                   <button

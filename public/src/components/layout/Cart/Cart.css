@@ -122,6 +122,13 @@
   letter-spacing: 0.05em;
 }
 
+.cart-item-size {
+  font-weight: 300;
+  text-transform: none;
+  color: var(--text-gray);
+  font-size: 0.7rem;
+}
+
 .cart-item-price {
   color: var(--accent-gold);
   font-weight: 300;

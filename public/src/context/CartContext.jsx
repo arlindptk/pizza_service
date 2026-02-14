@@ -22,6 +22,10 @@ export const CartProvider = ({ children }) => {
     setCart(cart.filter(item => item.id !== id));
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
@@ -30,6 +34,7 @@ export const CartProvider = ({ children }) => {
         cart,
         addToCart,
         removeFromCart,
+        clearCart,
         total,
         showCart,
         setShowCart,

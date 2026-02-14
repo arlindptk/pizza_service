@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { useAuth } from '../../context/AuthContext';
 import './Login.css';
 
 // Zones de livraison autorisées (fallback si API indisponible)
@@ -23,7 +24,12 @@ const DELIVERY_ZONES = {
 };
 
 const Login = () => {
-  const [step, setStep] = useState('initial'); // 'initial', 'login', 'postal', 'register'
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login: authLogin } = useAuth();
+  const [step, setStep] = useState('initial'); // 'initial', 'login', 'postal', 'register', 'forgot'
+  const redirectMessage = location.state?.message;
+  const [isOpen, setIsOpen] = useState(null); // null = loading, true/false = horaires
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,6 +41,7 @@ const Login = () => {
   const [postalData, setPostalData] = useState({
     codePostal: '',
   });
+  const [forgotEmail, setForgotEmail] = useState('');
   const [registerData, setRegisterData] = useState({
     identifiant: '',
     password: '',
@@ -49,6 +56,20 @@ const Login = () => {
     personneContact: '',
     remarque: '',
   });
+
+  // Vérifier les horaires d'ouverture
+  useEffect(() => {
+    const fetchHours = async () => {
+      try {
+        const res = await fetch(API_ENDPOINTS.HOURS);
+        const data = await res.json();
+        setIsOpen(data.open ?? true);
+      } catch {
+        setIsOpen(true); // En cas d'erreur, autoriser l'accès
+      }
+    };
+    fetchHours();
+  }, []);
 
   // Charger les localités depuis l'API quand le code postal change
   useEffect(() => {
@@ -134,17 +155,14 @@ const Login = () => {
       const result = await response.json();
 
       if (result.success) {
-        // Connexion réussie
-        setSuccessMessage(`Bienvenue ${result.user.prenom} ${result.user.nom} ! Connexion réussie.`);
+        authLogin(result.user);
+        setSuccessMessage(`Bienvenue ${result.user.prenom} ${result.user.nom} ! Redirection...`);
         setErrors({});
-        // Réinitialiser le formulaire
         setLoginData({ identifiant: '', password: '' });
-        // Ici vous pourriez stocker les infos utilisateur dans un contexte/state global
-        // et rediriger vers une page de commande
-        // Masquer le message après 5 secondes
         setTimeout(() => {
+          navigate('/menu');
           setSuccessMessage('');
-        }, 5000);
+        }, 1000);
       } else {
         setErrors({ general: result.error || 'Erreur de connexion' });
         setSuccessMessage('');
@@ -152,6 +170,35 @@ const Login = () => {
     } catch (err) {
       console.error('Erreur API:', err);
       setErrors({ general: 'Erreur de connexion au serveur. Veuillez réessayer.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setErrors({ email: 'Veuillez entrer votre adresse email' });
+      return;
+    }
+    setLoading(true);
+    setErrors({});
+    setSuccessMessage('');
+    try {
+      const response = await fetch(`${API_ENDPOINTS.AUTH}?action=forgot_password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setSuccessMessage(result.message || 'Vérifiez votre boîte email.');
+        setForgotEmail('');
+      } else {
+        setErrors({ general: result.error || 'Une erreur est survenue' });
+      }
+    } catch (err) {
+      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setLoading(false);
     }
@@ -254,6 +301,40 @@ const Login = () => {
     }
   };
 
+  // Chargement des horaires
+  if (isOpen === null) {
+    return (
+      <div className="login-page">
+        <div className="login-container">
+          <div className="login-card">
+            <p className="login-loading">Vérification des horaires...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fermé : afficher le message d'indisponibilité
+  if (isOpen === false) {
+    return (
+      <div className="login-page">
+        <div className="login-container">
+          <Link to="/" className="login-back-link">
+            <ArrowLeft size={20} />
+            Retour à l'accueil
+          </Link>
+          <div className="login-card login-closed-card">
+            <Clock size={48} className="login-closed-icon" />
+            <h2>Hors horaires d'ouverture</h2>
+            <p>L'inscription et la connexion sont disponibles uniquement pendant nos heures d'ouverture.</p>
+            <p className="login-closed-hint">Consultez nos horaires sur la page « Nous Trouver ».</p>
+            <Link to="/find-us" className="login-btn">Voir nos horaires</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="login-page">
       <div className="login-container">
@@ -261,6 +342,64 @@ const Login = () => {
           <ArrowLeft size={20} />
           Retour à l'accueil
         </Link>
+
+        {redirectMessage && (
+          <div className="login-redirect-banner">
+            <AlertCircle size={16} />
+            {redirectMessage}
+          </div>
+        )}
+
+        {step === 'forgot' && (
+          <div className="login-card">
+            <div className="login-section-header">
+              <h2>Mot de passe oublié</h2>
+              <p>Entrez l'adresse email associée à votre compte. Vous recevrez un nouveau mot de passe par email.</p>
+            </div>
+            <form className="login-form" onSubmit={handleForgotSubmit}>
+              <div className="form-group">
+                <label htmlFor="forgot-email">Adresse email *</label>
+                <input
+                  type="email"
+                  id="forgot-email"
+                  value={forgotEmail}
+                  onChange={(e) => { setForgotEmail(e.target.value); if (errors.email) setErrors({}); }}
+                  placeholder="votre@email.com"
+                  className={errors.email ? 'input-error' : ''}
+                  required
+                />
+                {errors.email && (
+                  <div className="error-message">
+                    <AlertCircle size={16} />
+                    {errors.email}
+                  </div>
+                )}
+              </div>
+              {successMessage && (
+                <div className="success-message">
+                  <CheckCircle size={16} />
+                  {successMessage}
+                </div>
+              )}
+              {errors.general && (
+                <div className="error-message">
+                  <AlertCircle size={16} />
+                  {errors.general}
+                </div>
+              )}
+              <button type="submit" className="login-btn" disabled={loading}>
+                {loading ? 'Envoi en cours...' : 'Envoyer le nouveau mot de passe'}
+              </button>
+              <button
+                type="button"
+                className="login-btn-secondary"
+                onClick={() => { setStep('initial'); setForgotEmail(''); setErrors({}); setSuccessMessage(''); }}
+              >
+                Retour
+              </button>
+            </form>
+          </div>
+        )}
 
         {step === 'initial' && (
           <>
@@ -304,9 +443,13 @@ const Login = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <Link to="#" className="forgot-password">
+                  <button
+                    type="button"
+                    className="forgot-password"
+                    onClick={() => { setStep('forgot'); setErrors({}); setSuccessMessage(''); }}
+                  >
                     Mot de passe perdu ?
-                  </Link>
+                  </button>
                 </div>
                 {successMessage && step === 'initial' && (
                   <div className="success-message">
@@ -412,9 +555,13 @@ const Login = () => {
                 />
               </div>
               <div className="form-group">
-                <Link to="#" className="forgot-password">
+                <button
+                  type="button"
+                  className="forgot-password"
+                  onClick={() => { setStep('forgot'); setErrors({}); setSuccessMessage(''); }}
+                >
                   Mot de passe perdu ?
-                </Link>
+                </button>
               </div>
               <button type="submit" className="login-btn">
                 Se connecter

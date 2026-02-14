@@ -1,44 +1,43 @@
 <?php
 /**
  * API pour récupérer le menu
+ * Adapté au schéma : cat (id, cat, nom), carte (num, cat, souscat, nom, descr, ttc, tva, visible, stock)
  */
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/cors.php';
 
 try {
-    // Récupérer les catégories
-    $categories = Database::query("SELECT * FROM cat WHERE actif = 1 ORDER BY ordre, id")->fetchAll();
+    // Récupérer les catégories (table cat : id, cat, nom)
+    $categories = Database::query("SELECT id, cat, nom FROM cat ORDER BY id")->fetchAll();
     
     if (empty($categories)) {
-        http_response_code(404);
         echo json_encode([
-            'success' => false,
-            'error' => 'Aucune catégorie trouvée',
-            'message' => 'Veuillez d\'abord insérer des catégories dans la table cat'
-        ], JSON_UNESCAPED_UNICODE);
+            'success' => true,
+            'data' => [],
+            'debug' => ['message' => 'Aucune catégorie dans la base, exécutez http://localhost:8000/api/seed.php']
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
     
-    // Récupérer les produits par catégorie
+    // Récupérer les produits par catégorie (carte.cat = cat.cat)
     $menu = [];
     foreach ($categories as $category) {
         $products = Database::query(
-            "SELECT * FROM carte WHERE cat_id = ? AND actif = 1 ORDER BY ordre, id",
-            [$category['id']]
+            "SELECT num, nom, descr, ttc FROM carte WHERE cat = ? AND visible = 1 AND stock = 1 ORDER BY num",
+            [$category['cat']]
         )->fetchAll();
         
         $menu[$category['nom']] = array_map(function($product) {
             return [
-                'id' => $product['id'],
+                'id' => (int)$product['num'],
                 'name' => $product['nom'],
-                'desc' => $product['description'] ?? '',
-                'price' => (float)$product['prix']
+                'desc' => $product['descr'] ?? '',
+                'price' => (float)$product['ttc']
             ];
         }, $products);
     }
     
-    // Si aucune donnée dans carte, retourner quand même les catégories vides
     echo json_encode([
         'success' => true,
         'data' => $menu,

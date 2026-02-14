@@ -103,6 +103,23 @@
   width: 100%;
 }
 
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: var(--text-gray);
+  padding: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+.header-logout-btn:hover {
+  color: var(--accent-gold);
+}
+
 .cart-button {
   display: flex;
   align-items: center;

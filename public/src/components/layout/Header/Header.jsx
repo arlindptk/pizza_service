@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingBag, LogOut } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 import { useCart } from '../../../context/CartContext';
 import './Header.css';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { cart, total, setShowCart } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { cart, total, setShowCart, clearCart } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,14 +57,32 @@ const Header = () => {
             className={`nav-link ${isActive('/login') ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            Commander en ligne
+            {isAuthenticated ? `Bonjour ${user?.prenom || ''}` : 'Commander en ligne'}
           </Link>
         </nav>
 
+        {isAuthenticated && (
+          <button 
+            className="header-logout-btn"
+            onClick={() => { logout(); clearCart(); setShowCart(false); setIsMobileMenuOpen(false); }}
+            aria-label="Déconnexion"
+            title="Déconnexion"
+          >
+            <LogOut size={18} />
+          </button>
+        )}
+
         <button 
           className="cart-button"
-          onClick={() => setShowCart(true)}
+          onClick={() => {
+            if (isAuthenticated) {
+              setShowCart(true);
+            } else {
+              navigate('/login', { state: { from: 'cart', message: 'Connectez-vous pour accéder au panier' } });
+            }
+          }}
           aria-label="Ouvrir le panier"
+          title={isAuthenticated ? 'Voir le panier' : 'Connectez-vous pour commander'}
         >
           <ShoppingBag size={18} />
           <span className="cart-count">{cart.length}</span>
