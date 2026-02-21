@@ -1,0 +1,25 @@
+# Configuration Apache pour PHP 8.4.0
+RewriteEngine On
+
+# Rediriger les requêtes API
+RewriteCond %{REQUEST_URI} ^/api/(.*)$
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Rediriger tout vers le frontend React en production
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^(.*)$ public/index.html [L]
+
+# Headers pour PHP 8.4
+<IfModule mod_headers.c>
+    Header set X-Powered-By "PHP/8.4.0"
+</IfModule>
+
+# Configuration PHP
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>

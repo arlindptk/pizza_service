@@ -1,0 +1,174 @@
+.client-phone {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem;
+}
+
+.client-phone h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-gray);
+  margin-bottom: 1rem;
+}
+
+.client-search {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.client-search input {
+  flex: 1;
+  max-width: 200px;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  font-size: 0.9rem;
+}
+
+.client-search input::placeholder {
+  color: var(--text-gray);
+}
+
+.client-search button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent-gold);
+  color: var(--primary-dark);
+  border: none;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.client-search button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.client-search button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.client-form-block {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.client-form,
+.client-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+}
+
+.client-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.client-form label span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-gray);
+}
+
+.client-form input,
+.client-form select,
+.client-form textarea {
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  font-size: 0.875rem;
+}
+
+.client-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.client-form button[type="submit"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.client-form button[type="submit"]:hover:not(:disabled) {
+  background: #2ecc71;
+}
+
+.client-form button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.client-readonly p {
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.client-readonly .client-comm {
+  font-style: italic;
+  color: var(--text-gray);
+}
+
+.client-btn-commander {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent-gold);
+  color: var(--primary-dark);
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  width: fit-content;
+  transition: opacity 0.2s;
+}
+
+.client-btn-commander:hover {
+  opacity: 0.9;
+}
+
+.client-btn-edit {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: 1px solid var(--text-gray);
+  color: var(--text-gray);
+  font-size: 0.7rem;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.client-btn-edit:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}

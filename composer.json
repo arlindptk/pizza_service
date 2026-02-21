@@ -1,0 +1,13 @@
+{
+    "name": "pizza-service/namur",
+    "description": "Site de commande Pizza Service Namur",
+    "require": {
+        "php": ">=8.0",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

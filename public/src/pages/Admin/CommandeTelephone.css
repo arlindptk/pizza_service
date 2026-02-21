@@ -1,0 +1,189 @@
+.commande-telephone-main {
+  padding-top: 1rem;
+}
+
+.commande-telephone-back {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  padding: 0.4rem 0;
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.commande-telephone-back:hover {
+  color: var(--accent-gold);
+}
+
+.commande-telephone-client {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.commande-telephone-client h2 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.commande-telephone-client p {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+}
+
+.commande-telephone-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .commande-telephone-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.commande-telephone-menu h3,
+.commande-telephone-panier h3 {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.commande-telephone-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.commande-telephone-cat h4 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-gold);
+  margin-bottom: 0.5rem;
+}
+
+.commande-telephone-cat ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.commande-telephone-cat li {
+  margin-bottom: 0.3rem;
+}
+
+.commande-telephone-cat button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-light);
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.commande-telephone-cat button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-gold);
+  color: var(--white);
+}
+
+.commande-telephone-panier {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem;
+  height: fit-content;
+}
+
+.commande-telephone-items {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.commande-telephone-items li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+.commande-telephone-items li button {
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.commande-telephone-items li button:hover {
+  color: #e74c3c;
+}
+
+.commande-telephone-total {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.commande-telephone-total strong {
+  color: var(--accent-gold);
+}
+
+.commande-telephone-panier label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.commande-telephone-panier label span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-gray);
+}
+
+.commande-telephone-panier input,
+.commande-telephone-panier select {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  font-size: 0.9rem;
+}
+
+.commande-telephone-submit {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--accent-gold);
+  color: var(--primary-dark);
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.commande-telephone-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.commande-telephone-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

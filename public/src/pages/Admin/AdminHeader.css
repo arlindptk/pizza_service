@@ -1,0 +1,133 @@
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 1000;
+}
+
+.admin-header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+}
+
+.admin-logo:hover {
+  color: var(--accent-gold);
+}
+
+.admin-logo-gold {
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.admin-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-status-badge {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.admin-status-badge.ouvert {
+  background: rgba(39, 174, 96, 0.2);
+  color: #2ecc71;
+}
+
+.admin-status-badge.ferme {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.admin-status-badge.auto {
+  background: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
+}
+
+.admin-status-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 1px solid var(--accent-gold);
+  color: var(--accent-gold);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-status-btn:hover:not(:disabled) {
+  background: var(--accent-gold);
+  color: var(--primary-dark);
+}
+
+.admin-status-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.admin-nav-link {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-gray);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.admin-nav-link:hover {
+  color: var(--accent-gold);
+}
+
+.admin-nav-link.active {
+  color: var(--accent-gold);
+}
+
+.admin-nav-logout {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: none;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-nav-logout:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
