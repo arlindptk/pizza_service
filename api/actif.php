@@ -10,6 +10,9 @@ require_once __DIR__ . '/cors.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $method = $_SERVER['REQUEST_METHOD'];
+if ($method === 'POST') {
+    require_once __DIR__ . '/require_admin.php';
+}
 
 try {
     switch ($method) {

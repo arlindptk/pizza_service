@@ -18,18 +18,29 @@ if ($method !== 'POST') {
 }
 
 try {
-    $data = json_decode(file_get_contents('php://input'), true);
-    if (empty($data['login']) || empty($data['items']) || !is_array($data['items'])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Login et articles requis'], JSON_UNESCAPED_UNICODE);
+    require_once __DIR__ . '/require_user_token.php';
+    $login = get_login_from_user_token();
+    if ($login === null) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'Authentification requise. Connectez-vous pour commander.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    $login = $data['login'];
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (empty($data['items']) || !is_array($data['items'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Articles requis'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $items = $data['items'];
-    $livraison = $data['livraison'] ?? '';
-    $paiement = $data['paiement'] ?? 'cash';
-    $remarque = $data['remarque'] ?? '';
+    if (count($items) > 100) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Trop d\'articles'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $livraison = mb_substr(trim($data['livraison'] ?? ''), 0, 20);
+    $paiement = in_array($data['paiement'] ?? '', ['cash', 'bancontact', 'visa'], true) ? $data['paiement'] : 'cash';
+    $supplement = isset($data['supplement']) ? (float) $data['supplement'] : 0;
 
     // Récupérer le client (surfeur)
     $surf = Database::query("SELECT id, nom, prenom, adresse, numero, mail FROM surfeur WHERE login = ?", [$login])->fetch();
@@ -52,15 +63,23 @@ try {
     $idFacture = (int)$db->lastInsertId();
 
     foreach ($items as $item) {
-        $nom = $item['name'] ?? $item['nom'] ?? 'Article';
-        $qte = max(1, (int)($item['qte'] ?? 1));
+        $nom = mb_substr(trim($item['name'] ?? $item['nom'] ?? 'Article'), 0, 255);
+        $qte = max(1, min(99, (int)($item['qte'] ?? 1)));
         $ttc = (float)($item['price'] ?? $item['ttc'] ?? 0);
+        if ($ttc < 0) $ttc = 0;
         $tot = round($qte * $ttc, 2);
-        $ref = $item['id'] ?? $item['ref'] ?? '';
+        $ref = mb_substr(trim($item['id'] ?? $item['ref'] ?? ''), 0, 50);
 
         Database::query(
             "INSERT INTO facture_online_ligne (id_facture, ref, nom, qte, gratos, ttc, tot, total, tva) VALUES (?, ?, ?, ?, 0, ?, ?, ?, 6)",
             [$idFacture, $ref, $nom, $qte, $ttc, $tot, $tot]
+        );
+    }
+
+    if ($supplement > 0) {
+        Database::query(
+            "INSERT INTO facture_online_ligne (id_facture, ref, nom, qte, gratos, ttc, tot, total, tva) VALUES (?, '', ?, 1, 0, ?, ?, ?, 6)",
+            [$idFacture, 'Supplément paiement carte', $supplement, $supplement]
         );
     }
 

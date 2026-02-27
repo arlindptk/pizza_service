@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Check, X } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminHeader from './AdminHeader';
 import ClientPhone from './ClientPhone';
 import './Admin.css';
@@ -83,10 +84,15 @@ const Admin = () => {
   const prevCountRef = useRef(0);
   const hasPlayedRef = useRef(false);
 
+  const { getAdminAuthHeaders, logout } = useAdminAuth();
   const fetchOrders = useCallback(async () => {
     try {
-      const r = await fetch(`${API_ENDPOINTS.ADMIN}?action=orders`);
+      const r = await fetch(`${API_ENDPOINTS.ADMIN}?action=orders`, { headers: getAdminAuthHeaders() });
       const json = await r.json();
+      if (r.status === 401) {
+        logout();
+        return 0;
+      }
       if (json.success) {
         setOrders(json.data || []);
         setError(null);
@@ -111,7 +117,7 @@ const Admin = () => {
     const setModeAuto = () => {
       fetch(API_ENDPOINTS.ACTIF, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
         body: JSON.stringify({ actif: 2 }),
         keepalive: true,
       });
@@ -156,7 +162,7 @@ const Admin = () => {
     try {
       const r = await fetch(`${API_ENDPOINTS.ADMIN}?action=accept`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
         body: JSON.stringify({ id }),
       });
       const json = await r.json();
@@ -178,7 +184,7 @@ const Admin = () => {
     try {
       const r = await fetch(`${API_ENDPOINTS.ADMIN}?action=refuse`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
         body: JSON.stringify({ id }),
       });
       const json = await r.json();

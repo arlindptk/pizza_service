@@ -26,10 +26,6 @@ const Header = () => {
   return (
     <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
-        <Link to="/" className="logo">
-          <span className="logo-text">PIZZA SERVICE <span className="gold-text">NAMUR</span></span>
-        </Link>
-
         <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <Link 
             to="/" 
@@ -61,19 +57,20 @@ const Header = () => {
           </Link>
         </nav>
 
-        {isAuthenticated && (
-          <button 
-            className="header-logout-btn"
-            onClick={() => { logout(); clearCart(); setShowCart(false); setIsMobileMenuOpen(false); }}
-            aria-label="Déconnexion"
-            title="Déconnexion"
-          >
-            <LogOut size={18} />
-          </button>
-        )}
+        <div className="header-actions">
+          {isAuthenticated && (
+            <button 
+              className="header-logout-btn"
+              onClick={() => { logout(); clearCart(); setShowCart(false); setIsMobileMenuOpen(false); }}
+              aria-label="Déconnexion"
+              title="Déconnexion"
+            >
+              <LogOut size={18} />
+            </button>
+          )}
 
-        <button 
-          className="cart-button"
+          <button 
+            className="cart-button"
           onClick={() => {
             if (isAuthenticated) {
               setShowCart(true);
@@ -82,24 +79,25 @@ const Header = () => {
             }
           }}
           aria-label="Ouvrir le panier"
-          title={isAuthenticated ? 'Voir le panier' : 'Connectez-vous pour commander'}
+          title={isAuthenticated ? 'Voir le panier (réduction 5% membre)' : 'Connectez-vous pour commander'}
         >
           <ShoppingBag size={18} />
           <span className="cart-count">{cart.length}</span>
-          <span className="cart-total-text">• {total.toFixed(2)}€</span>
-        </button>
+          <span className="cart-total-text">• {(isAuthenticated ? Math.round(total * 0.95 * 100) / 100 : total).toFixed(2)}€</span>
+          </button>
 
-        <button 
-          className="mobile-menu-toggle"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </button>
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );

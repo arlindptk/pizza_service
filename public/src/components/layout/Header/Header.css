@@ -23,8 +23,21 @@
   margin: 0 auto;
   padding: 0 3rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  position: relative;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .logo {
@@ -63,6 +76,14 @@
   display: flex;
   gap: 2rem;
   align-items: center;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    position: absolute;
+    left: 0;
+    transform: none;
+  }
 }
 
 .nav-link {

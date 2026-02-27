@@ -54,6 +54,38 @@
   margin-bottom: 1rem;
 }
 
+.commande-telephone-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.commande-telephone-nav-btn {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-gray);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.commande-telephone-nav-btn:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.commande-telephone-nav-btn.active {
+  color: var(--primary-dark);
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
 .commande-telephone-cats {
   display: flex;
   flex-direction: column;

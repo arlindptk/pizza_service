@@ -20,7 +20,9 @@ export const AuthProvider = ({ children }) => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setUser(JSON.parse(stored));
+        const data = JSON.parse(stored);
+        if (data && (data.identifiant || data.login)) setUser(data);
+        else localStorage.removeItem(STORAGE_KEY);
       } catch (e) {
         localStorage.removeItem(STORAGE_KEY);
       }
@@ -28,14 +30,25 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+  const login = (userData, token) => {
+    const data = { ...userData, token: token || '' };
+    setUser(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+  };
+
+  const getAuthHeaders = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return {};
+    try {
+      const data = JSON.parse(stored);
+      if (data?.token) return { Authorization: `Bearer ${data.token}` };
+    } catch (e) {}
+    return {};
   };
 
   return (
@@ -46,6 +59,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         loading,
+        getAuthHeaders,
       }}
     >
       {children}

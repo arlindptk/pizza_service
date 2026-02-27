@@ -21,7 +21,7 @@ export const AdminAuthProvider = ({ children }) => {
     if (stored) {
       try {
         const data = JSON.parse(stored);
-        if (data && data.admin) setAdmin(data);
+        if (data && data.admin && data.token) setAdmin(data);
         else localStorage.removeItem(STORAGE_KEY);
       } catch (e) {
         localStorage.removeItem(STORAGE_KEY);
@@ -30,8 +30,8 @@ export const AdminAuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    const data = { ...userData, admin: true };
+  const login = (userData, token) => {
+    const data = { ...userData, admin: true, token: token || '' };
     setAdmin(data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
@@ -39,6 +39,11 @@ export const AdminAuthProvider = ({ children }) => {
   const logout = () => {
     setAdmin(null);
     localStorage.removeItem(STORAGE_KEY);
+  };
+
+  const getAdminAuthHeaders = () => {
+    if (!admin?.token) return {};
+    return { Authorization: `Bearer ${admin.token}` };
   };
 
   return (
@@ -49,6 +54,7 @@ export const AdminAuthProvider = ({ children }) => {
         login,
         logout,
         loading,
+        getAdminAuthHeaders,
       }}
     >
       {children}

@@ -8,13 +8,13 @@ import './AdminHeader.css';
 const AdminHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAdminAuth();
+  const { logout, getAdminAuthHeaders } = useAdminAuth();
   const [ouvert, setOuvert] = useState(true);
   const [modeAuto, setModeAuto] = useState(true);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_ENDPOINTS.ACTIF}`)
+    fetch(`${API_ENDPOINTS.ACTIF}`, { headers: getAdminAuthHeaders() })
       .then((r) => r.json())
       .then((j) => {
         if (j.success) {
@@ -29,7 +29,7 @@ const AdminHeader = () => {
     setLoading(true);
     fetch(`${API_ENDPOINTS.ACTIF}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
       body: JSON.stringify({ toggle: true }),
     })
       .then((r) => r.json())

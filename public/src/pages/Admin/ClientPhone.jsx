@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Save, ShoppingCart } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import './ClientPhone.css';
 
 const ClientPhone = () => {
   const navigate = useNavigate();
+  const { getAdminAuthHeaders } = useAdminAuth();
   const [telSearch, setTelSearch] = useState('');
   const [client, setClient] = useState(null);
   const [searching, setSearching] = useState(false);
@@ -28,7 +30,7 @@ const ClientPhone = () => {
   });
 
   useEffect(() => {
-    fetch(`${API_ENDPOINTS.CLIENT}?action=localites`)
+    fetch(`${API_ENDPOINTS.CLIENT}?action=localites`, { headers: getAdminAuthHeaders() })
       .then((r) => r.json())
       .then((j) => {
         if (j.success && j.byCp) setLocalites({ byCp: j.byCp, data: j.data || [] });
@@ -45,7 +47,7 @@ const ClientPhone = () => {
     setSearching(true);
     setSaved(false);
     try {
-      const r = await fetch(`${API_ENDPOINTS.CLIENT}?action=search&tel=${encodeURIComponent(tel)}`);
+      const r = await fetch(`${API_ENDPOINTS.CLIENT}?action=search&tel=${encodeURIComponent(tel)}`, { headers: getAdminAuthHeaders() });
       const j = await r.json();
       if (j.success) {
         if (j.found && j.client) {
@@ -94,7 +96,7 @@ const ClientPhone = () => {
     try {
       const r = await fetch(`${API_ENDPOINTS.CLIENT}?action=save`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
         body: JSON.stringify(form),
       });
       const j = await r.json();

@@ -71,34 +71,33 @@ const Login = () => {
     fetchHours();
   }, []);
 
-  // Charger les localités depuis l'API quand le code postal change
+  // Charger les localités depuis l'API (base de données) selon le code postal affiché :
+  // - à l'étape "inscription", utiliser le code postal du formulaire d'inscription
+  // - à l'étape "code postal", utiliser le code postal de l'étape
   useEffect(() => {
+    const codePostal = (step === 'register' ? registerData.codePostal : postalData.codePostal)?.trim?.() || '';
+    if (codePostal.length !== 4) {
+      setLocalites([]);
+      return;
+    }
     const fetchLocalites = async () => {
-      if (postalData.codePostal && postalData.codePostal.length === 4) {
-        try {
-          const response = await fetch(
-            `${API_ENDPOINTS.AUTH}?action=localites&code_postal=${postalData.codePostal}`
-          );
-          const result = await response.json();
-          
-          if (result.success && result.data.length > 0) {
-            setLocalites(result.data);
-          } else {
-            // Fallback sur les données statiques
-            setLocalites(DELIVERY_ZONES[postalData.codePostal] || []);
-          }
-        } catch (err) {
-          console.error('Erreur API localités:', err);
-          // Fallback sur les données statiques
-          setLocalites(DELIVERY_ZONES[postalData.codePostal] || []);
+      try {
+        const response = await fetch(
+          `${API_ENDPOINTS.AUTH}?action=localites&code_postal=${encodeURIComponent(codePostal)}`
+        );
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+          setLocalites(result.data);
+        } else {
+          setLocalites(DELIVERY_ZONES[codePostal] || []);
         }
-      } else {
-        setLocalites([]);
+      } catch (err) {
+        console.error('Erreur API localités:', err);
+        setLocalites(DELIVERY_ZONES[codePostal] || []);
       }
     };
-
     fetchLocalites();
-  }, [postalData.codePostal]);
+  }, [step, registerData.codePostal, postalData.codePostal]);
 
   const handleLoginChange = (e) => {
     setLoginData({
@@ -118,14 +117,15 @@ const Login = () => {
   };
 
   const handleRegisterChange = (e) => {
-    setRegisterData({
-      ...registerData,
-      [e.target.name]: e.target.value,
+    const { name, value } = e.target;
+    setRegisterData((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === 'codePostal') next.localite = '';
+      return next;
     });
-    // Effacer les messages d'erreur lors de la saisie
-    if (errors[e.target.name]) {
+    if (errors[name]) {
       const newErrors = { ...errors };
-      delete newErrors[e.target.name];
+      delete newErrors[name];
       setErrors(newErrors);
     }
     if (errors.general) setErrors({});
@@ -155,7 +155,7 @@ const Login = () => {
       const result = await response.json();
 
       if (result.success) {
-        authLogin(result.user);
+        authLogin(result.user, result.token);
         setSuccessMessage(`Bienvenue ${result.user.prenom} ${result.user.nom} ! Redirection...`);
         setErrors({});
         setLoginData({ identifiant: '', password: '' });
@@ -208,27 +208,50 @@ const Login = () => {
     return DELIVERY_ZONES.hasOwnProperty(codePostal);
   };
 
-  const handlePostalSubmit = (e) => {
+  const handlePostalSubmit = async (e) => {
     e.preventDefault();
     const codePostal = postalData.codePostal.trim();
-    
-    if (!validatePostalCode(codePostal)) {
-      setErrors({ postal: 'Malheureusement, nous ne desservons pas cette zone' });
+    if (codePostal.length !== 4) {
+      setErrors({ postal: 'Veuillez entrer un code postal de 4 chiffres' });
       return;
     }
-
-    setErrors({});
-    setRegisterData(prev => ({ ...prev, codePostal }));
-    setStep('register');
+    if (validatePostalCode(codePostal)) {
+      setErrors({});
+      setRegisterData((prev) => ({ ...prev, codePostal }));
+      setStep('register');
+      return;
+    }
+    setErrors({ postal: 'Vérification du code postal…' });
+    try {
+      const response = await fetch(
+        `${API_ENDPOINTS.AUTH}?action=localites&code_postal=${encodeURIComponent(codePostal)}`
+      );
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+        setErrors({});
+        setRegisterData((prev) => ({ ...prev, codePostal }));
+        setStep('register');
+      } else {
+        setErrors({ postal: 'Malheureusement, nous ne desservons pas cette zone' });
+      }
+    } catch {
+      setErrors({ postal: 'Malheureusement, nous ne desservons pas cette zone' });
+    }
   };
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Vérifier que le code postal est valide
-    if (!validatePostalCode(registerData.codePostal)) {
-      newErrors.codePostal = 'Code postal non valide';
+    // Code postal : 4 chiffres et au moins une localité connue (API ou fallback)
+    const cp = (registerData.codePostal || '').trim();
+    if (cp.length !== 4) {
+      newErrors.codePostal = 'Code postal non valide (4 chiffres)';
+    } else {
+      const localitesList = localites.length > 0 ? localites : (DELIVERY_ZONES[cp] || []);
+      if (localitesList.length === 0) {
+        newErrors.codePostal = 'Aucune localité pour ce code postal. Vérifiez le code ou contactez-nous.';
+      }
     }
 
     // Vérifier que la localité est sélectionnée
@@ -237,9 +260,9 @@ const Login = () => {
     }
 
     // Vérifier que la localité correspond au code postal
-    if (registerData.codePostal && registerData.localite) {
-      const localitesList = localites.length > 0 ? localites : (DELIVERY_ZONES[registerData.codePostal] || []);
-      if (!localitesList.includes(registerData.localite)) {
+    if (cp && registerData.localite) {
+      const localitesList = localites.length > 0 ? localites : (DELIVERY_ZONES[cp] || []);
+      if (localitesList.length > 0 && !localitesList.includes(registerData.localite)) {
         newErrors.localite = 'Localité non valide pour ce code postal';
       }
     }

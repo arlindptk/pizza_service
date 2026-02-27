@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminHeader from './AdminHeader';
 import './CommandeTelephone.css';
 
 const CommandeTelephone = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { getAdminAuthHeaders } = useAdminAuth();
   const { client, tel, numc } = location.state || {};
   const [menu, setMenu] = useState({});
   const [items, setItems] = useState([]);
@@ -49,7 +51,7 @@ const CommandeTelephone = () => {
     try {
       const r = await fetch(API_ENDPOINTS.COMMANDE_PHONE, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminAuthHeaders() },
         body: JSON.stringify({
           tel: client?.tel1 || tel,
           items: items.map((i) => ({ name: i.name, price: i.price, qte: 1 })),
@@ -74,7 +76,26 @@ const CommandeTelephone = () => {
   const t = client?.tel1 || tel;
   if (!t) return null;
 
-  const categories = Object.entries(menu);
+  const categoryNames = Object.keys(menu);
+  const [selectedCat, setSelectedCat] = useState('');
+  const menuInitialized = useRef(false);
+
+  // Au premier chargement du menu, sélectionner la première catégorie
+  useEffect(() => {
+    if (categoryNames.length > 0 && !menuInitialized.current) {
+      menuInitialized.current = true;
+      setSelectedCat(categoryNames[0]);
+    }
+  }, [categoryNames.length, categoryNames[0]]);
+
+  // Si la catégorie sélectionnée n'existe plus, revenir à la première (sauf "Tout")
+  useEffect(() => {
+    if (categoryNames.length && selectedCat !== '' && !categoryNames.includes(selectedCat)) {
+      setSelectedCat(categoryNames[0]);
+    }
+  }, [categoryNames.join(','), selectedCat]);
+
+  const productsToShow = selectedCat === '' ? [] : (menu[selectedCat] || []);
 
   return (
     <div className="admin-page">
@@ -96,23 +117,60 @@ const CommandeTelephone = () => {
             {loading ? (
               <p className="admin-loading">Chargement du menu…</p>
             ) : (
-              <div className="commande-telephone-cats">
-                {categories.map(([cat, products]) => (
-                  <div key={cat} className="commande-telephone-cat">
-                    <h4>{cat}</h4>
-                    <ul>
-                      {products.map((p, idx) => (
-                        <li key={idx}>
-                          <button type="button" onClick={() => addItem(p, cat)}>
-                            <Plus size={14} />
-                            {p.name} — {p.price.toFixed(2)} €
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+              <>
+                <nav className="commande-telephone-nav" aria-label="Catégories">
+                  <button
+                    type="button"
+                    className={`commande-telephone-nav-btn ${selectedCat === '' ? 'active' : ''}`}
+                    onClick={() => setSelectedCat('')}
+                  >
+                    Tout
+                  </button>
+                  {categoryNames.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`commande-telephone-nav-btn ${selectedCat === cat ? 'active' : ''}`}
+                      onClick={() => setSelectedCat(cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </nav>
+                <div className="commande-telephone-cats">
+                  {selectedCat === '' ? (
+                    Object.entries(menu).map(([cat, products]) => (
+                      <div key={cat} className="commande-telephone-cat">
+                        <h4>{cat}</h4>
+                        <ul>
+                          {products.map((p, idx) => (
+                            <li key={idx}>
+                              <button type="button" onClick={() => addItem(p, cat)}>
+                                <Plus size={14} />
+                                {p.name} — {p.price.toFixed(2)} €
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="commande-telephone-cat">
+                      <h4>{selectedCat}</h4>
+                      <ul>
+                        {productsToShow.map((p, idx) => (
+                          <li key={idx}>
+                            <button type="button" onClick={() => addItem(p, selectedCat)}>
+                              <Plus size={14} />
+                              {p.name} — {p.price.toFixed(2)} €
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </section>
 

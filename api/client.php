@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/require_admin.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -73,15 +74,15 @@ try {
                 $tel = substr($tel, -10);
 
                 $num = (int)($data['numc'] ?? $data['num'] ?? 0);
-                $nom = trim($data['nom'] ?? '');
-                $prenom = trim($data['prenom'] ?? '');
-                $ad1 = trim($data['ad1'] ?? '');
-                $ad2 = trim($data['ad2'] ?? '');
-                $cp = trim($data['cp'] ?? '');
-                $ville = trim($data['ville'] ?? $data['localite'] ?? '');
+                $nom = mb_substr(trim($data['nom'] ?? ''), 0, 100);
+                $prenom = mb_substr(trim($data['prenom'] ?? ''), 0, 100);
+                $ad1 = mb_substr(trim($data['ad1'] ?? ''), 0, 255);
+                $ad2 = mb_substr(trim($data['ad2'] ?? ''), 0, 255);
+                $cp = mb_substr(trim($data['cp'] ?? ''), 0, 10);
+                $ville = mb_substr(trim($data['ville'] ?? $data['localite'] ?? ''), 0, 100);
                 $fidel = (int)($data['fidel'] ?? 0);
-                $comm = trim($data['comm'] ?? '');
-                $email = trim($data['email'] ?? $data['mail'] ?? '');
+                $comm = mb_substr(trim($data['comm'] ?? ''), 0, 500);
+                $email = mb_substr(trim($data['email'] ?? $data['mail'] ?? ''), 0, 255);
 
                 if ($num > 0) {
                     Database::query(

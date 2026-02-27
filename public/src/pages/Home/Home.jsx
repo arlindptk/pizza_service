@@ -30,11 +30,14 @@ const Home = () => {
     <div className="home">
       {/* Hero Section */}
       <section className="hero">
+        <video className="hero-video" autoPlay muted loop playsInline>
+          <source src="/videos/video1.mp4" type="video/mp4" />
+        </video>
         <div className="hero-overlay"></div>
         <div className="hero-content">
+          <p className="hero-brand">PIZZA SERVICE <span className="hero-brand-gold">NAMUR</span></p>
           <h1 className="hero-title">
             <span className="hero-title-line">L'Art de la Pizza</span>
-            <span className="hero-title-line accent">Napolitaine</span>
           </h1>
           <div className="hero-buttons">
             <Link to="/menu" className="btn btn-primary">
@@ -73,6 +76,8 @@ const Home = () => {
               <p>Commandez en ligne et recevez votre pizza chaude en moins de 30 minutes.</p>
             </div>
           </div>
+          <p className="features-tagline">Plus grand choix de pizzas de la région</p>
+          <p className="features-tagline-sub">Entreprise familiale</p>
         </div>
       </section>
 
@@ -103,49 +108,49 @@ const Home = () => {
             <div className="pizza-preview-card reveal">
               <div className="pizza-image-wrapper">
                 <img 
-                  src="https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                  alt="Margherita"
+                  src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" 
+                  alt="Alba"
                   className="pizza-image"
                 />
               </div>
               <div className="pizza-content">
                 <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-xl font-serif">Margherita Classica</h3>
-                  <span style={{color: 'var(--accent-gold)'}} className="font-light">14€</span>
+                  <h3 className="text-xl font-serif">Alba</h3>
+                  <span style={{color: 'var(--accent-gold)'}} className="font-light">21€</span>
                 </div>
-                <p className="text-zinc-500 text-sm leading-relaxed">Tomates San Marzano, Mozzarella di Bufala, Basilic frais, Huile d'olive extra vierge.</p>
-              </div>
-            </div>
-            <div className="pizza-preview-card reveal">
-              <div className="pizza-image-wrapper">
-                <img 
-                  src="https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                  alt="Pepperoni"
-                  className="pizza-image"
-                />
-              </div>
-              <div className="pizza-content">
-                <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-xl font-serif">Diavola Moderna</h3>
-                  <span style={{color: 'var(--accent-gold)'}} className="font-light">18€</span>
-                </div>
-                <p className="text-zinc-500 text-sm leading-relaxed">Salami piquant calabrais, Nduja, Olives Taggiasche, Tomates séchées.</p>
+                <p className="text-zinc-500 text-sm leading-relaxed">Tomate, fromage, chips de parme, roquette, parmesan, tomates cerises, burrata, crème de pistache, pistache.</p>
               </div>
             </div>
             <div className="pizza-preview-card reveal">
               <div className="pizza-image-wrapper">
                 <img 
                   src="https://images.unsplash.com/photo-1541745537411-b8046dc6d66c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                  alt="Tartufo"
+                  alt="Trim"
                   className="pizza-image"
                 />
               </div>
               <div className="pizza-content">
                 <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-xl font-serif">Tartufo Nero</h3>
-                  <span style={{color: 'var(--accent-gold)'}} className="font-light">22€</span>
+                  <h3 className="text-xl font-serif">Trim</h3>
+                  <span style={{color: 'var(--accent-gold)'}} className="font-light">18,50€</span>
                 </div>
-                <p className="text-zinc-500 text-sm leading-relaxed">Crème de truffe noire, Mozzarella, Champignons sauvages, copeaux de Parmesan 24 mois.</p>
+                <p className="text-zinc-500 text-sm leading-relaxed">Crème de pistache, mozzarella, jambon, bufala, pistache, roquette.</p>
+              </div>
+            </div>
+            <div className="pizza-preview-card reveal">
+              <div className="pizza-image-wrapper">
+                <img 
+                  src="https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  alt="Pepper"
+                  className="pizza-image"
+                />
+              </div>
+              <div className="pizza-content">
+                <div className="flex justify-between items-baseline mb-2">
+                  <h3 className="text-xl font-serif">Pepper</h3>
+                  <span style={{color: 'var(--accent-gold)'}} className="font-light">15€</span>
+                </div>
+                <p className="text-zinc-500 text-sm leading-relaxed">Sauce poivre, fromage, oignons, tomate fraîche, blanc de poulet, haché de bœuf.</p>
               </div>
             </div>
           </div>

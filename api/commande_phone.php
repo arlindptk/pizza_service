@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/cors.php';
+require_once __DIR__ . '/require_admin.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -32,8 +33,8 @@ try {
 
     $login = 'tel_' . $tel;
     $numero = $tel;
-    $livraison = $data['livraison'] ?? '';
-    $paiement = $data['paiement'] ?? 'cash';
+    $livraison = mb_substr(trim($data['livraison'] ?? ''), 0, 20);
+    $paiement = in_array($data['paiement'] ?? '', ['cash', 'carte', 'bancontact', 'visa'], true) ? $data['paiement'] : 'cash';
 
     $db = Database::getInstance();
     $db->beginTransaction();
@@ -47,12 +48,18 @@ try {
     );
     $idFacture = (int)$db->lastInsertId();
 
+    if (count($data['items']) > 100) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Trop d\'articles'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     foreach ($data['items'] as $item) {
-        $nom = $item['name'] ?? $item['nom'] ?? 'Article';
-        $qte = max(1, (int)($item['qte'] ?? 1));
+        $nom = mb_substr(trim($item['name'] ?? $item['nom'] ?? 'Article'), 0, 255);
+        $qte = max(1, min(99, (int)($item['qte'] ?? 1)));
         $ttc = (float)($item['price'] ?? $item['ttc'] ?? 0);
+        if ($ttc < 0) $ttc = 0;
         $tot = round($qte * $ttc, 2);
-        $ref = $item['id'] ?? $item['ref'] ?? '';
+        $ref = mb_substr(trim($item['id'] ?? $item['ref'] ?? ''), 0, 50);
 
         Database::query(
             "INSERT INTO facture_online_ligne (id_facture, ref, nom, qte, gratos, ttc, tot, total, tva) VALUES (?, ?, ?, ?, 0, ?, ?, ?, 6)",

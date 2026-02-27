@@ -128,12 +128,6 @@ export const MENU_DATA = {
     { name: "Tagl Saumon Fumé", desc: "Saumon, crème et fines herbes", price: 15.50 },
     { name: "Tagl toscane", desc: "Tomate fraiches, crème, 6 scampis, ail, basilic", price: 15.50 }
   ],
-  Salade: [
-    { name: "X2 Pain à l'ail", desc: "2 pièces", price: 3.50 },
-    { name: "X2 Pain à l'ail + lardon", desc: "", price: 4.50 },
-    { name: "Assiette italienne", desc: "", price: 13.50 },
-    { name: "Burrata bomb", desc: "pâte à pizza farcie, burrata, pesto vert et éclats de pistache", price: 12.00 }
-  ],
   Dessert: [
     { name: "Bavarois au Speculoos", desc: "glace speculoos, biscuit, gateau", price: 6.50 },
     { name: "Bavarois framboise", desc: "mousse framboise, gateau, biscuit", price: 6.50 },

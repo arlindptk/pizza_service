@@ -32,7 +32,7 @@ const AdminLogin = () => {
       });
       const j = await r.json();
       if (j.success && j.admin) {
-        login(j.user);
+        login(j.user, j.token);
         navigate(from, { replace: true });
       } else {
         setError(j.error || 'Connexion refusée');

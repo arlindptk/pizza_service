@@ -91,28 +91,33 @@ try {
                     exit;
                 }
                 
-                // Créer l'utilisateur dans surfeur
+                // Limiter les longueurs pour éviter abus et dépassement DB
+                $identifiant = mb_substr(trim($data['identifiant']), 0, 100);
+                $nom = mb_substr(trim($data['nom']), 0, 100);
+                $prenom = mb_substr(trim($data['prenom']), 0, 100);
+                $adresse = mb_substr(trim(($data['numero'] ?? '') . ' ' . ($data['rue'] ?? '')), 0, 255);
+                if ($adresse === '') $adresse = mb_substr(trim($data['rue'] ?? ''), 0, 255);
+                $localite = mb_substr(trim($data['localite']), 0, 100);
+                $mail = mb_substr(trim($data['adresseEmail'] ?? ''), 0, 255);
+                $telephone = mb_substr(trim($data['telephone'] ?? ''), 0, 20);
+                $contact = mb_substr(trim($data['personneContact'] ?? ''), 0, 100);
+                $remarque = mb_substr(trim($data['remarque'] ?? ''), 0, 500);
                 $passwordHash = password_hash($data['password'], PASSWORD_DEFAULT);
-                $adresse = trim(($data['numero'] ?? '') . ' ' . ($data['rue'] ?? ''));
-                if (empty($adresse)) {
-                    $adresse = ($data['rue'] ?? '');
-                }
-                
                 Database::query(
                     "INSERT INTO surfeur (login, password, nom, prenom, adresse, cp, localite, mail, numero, contact, rem) 
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [
-                        $data['identifiant'],
+                        $identifiant,
                         $passwordHash,
-                        $data['nom'],
-                        $data['prenom'],
-                        $adresse ?: '',
+                        $nom,
+                        $prenom,
+                        $adresse,
                         $data['codePostal'],
-                        $data['localite'],
-                        $data['adresseEmail'] ?? '',
-                        $data['telephone'] ?? '',
-                        $data['personneContact'] ?? '',
-                        $data['remarque'] ?? ''
+                        $localite,
+                        $mail,
+                        $telephone,
+                        $contact,
+                        $remarque
                     ]
                 );
                 
@@ -152,15 +157,25 @@ try {
                     ], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
-                
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+7 days'));
+                try {
+                    Database::query(
+                        "INSERT INTO user_session (token, login, expires_at) VALUES (?, ?, ?)",
+                        [$token, $user['login'], $expires]
+                    );
+                } catch (PDOException $e) {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'error' => 'Erreur serveur'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
                 unset($user['password']);
-                // Aligner les clés attendues par le frontend (identifiant, nom, prenom)
                 $user['identifiant'] = $user['login'];
                 unset($user['login']);
-                
                 echo json_encode([
                     'success' => true,
-                    'user' => $user
+                    'user' => $user,
+                    'token' => $token
                 ], JSON_UNESCAPED_UNICODE);
                 
             } elseif ($action === 'admin_login') {
@@ -200,15 +215,26 @@ try {
                     ], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
-                
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+                try {
+                    Database::query(
+                        "INSERT INTO admin_session (token, admin_login, expires_at) VALUES (?, ?, ?)",
+                        [$token, $user['login'], $expires]
+                    );
+                } catch (PDOException $e) {
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'error' => 'Erreur serveur'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
                 unset($user['password']);
                 $user['identifiant'] = $user['login'];
                 unset($user['login']);
-                
                 echo json_encode([
                     'success' => true,
                     'user' => $user,
-                    'admin' => true
+                    'admin' => true,
+                    'token' => $token
                 ], JSON_UNESCAPED_UNICODE);
                 
             } elseif ($action === 'forgot_password') {
@@ -300,17 +326,15 @@ try {
             
         case 'GET':
             if ($action === 'localites') {
-                $codePostal = $_GET['code_postal'] ?? '';
-                
-                if (empty($codePostal)) {
+                $codePostal = preg_replace('/\D/', '', (string)($_GET['code_postal'] ?? ''));
+                if (strlen($codePostal) !== 4) {
                     http_response_code(400);
                     echo json_encode([
                         'success' => false,
-                        'error' => 'Code postal requis'
+                        'error' => 'Code postal requis (4 chiffres)'
                     ], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
-                
                 $localites = Database::query(
                     "SELECT nom_localite FROM localite WHERE cp_localite = ? ORDER BY nom_localite",
                     [$codePostal]

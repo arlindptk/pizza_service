@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pizza, Utensils, Baby, Salad, Dessert, Coffee, Settings, Plus } from 'lucide-react';
+import { Pizza, Utensils, Baby, Dessert, Coffee, Settings, Plus } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -9,7 +9,9 @@ const Menu = () => {
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const [menuData, setMenuData] = useState({});
-  const categories = Object.keys(menuData);
+  const categories = Object.keys(menuData).filter(
+    (cat) => cat !== 'Salade' && cat !== 'Salades'
+  );
   const [activeTab, setActiveTab] = useState(categories[0] || 'Pizzas');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,9 +84,6 @@ const Menu = () => {
         return <Utensils size={16} />;
       case 'Enfants':
         return <Baby size={16} />;
-      case 'Salade':
-      case 'Salades':
-        return <Salad size={16} />;
       case 'Dessert':
       case 'Desserts':
         return <Dessert size={16} />;

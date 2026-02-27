@@ -23,7 +23,82 @@
   color: var(--white);
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.ventes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ventes-filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ventes-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ventes-filter-input {
+  padding: 0.5rem 0.75rem;
+  min-width: 140px;
+  font-size: 0.9rem;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.ventes-filter-input:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.ventes-filter-input::placeholder {
+  color: var(--text-gray);
+}
+
+.ventes-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ventes-filter-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bg-dark);
+  background: var(--accent-gold);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ventes-filter-btn:hover {
+  filter: brightness(1.1);
+}
+
+.ventes-filter-btn-reset {
+  background: transparent;
+  color: var(--text-gray);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ventes-filter-btn-reset:hover {
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .ventes-list {
@@ -38,6 +113,15 @@
   padding: 1.25rem;
 }
 
+.vente-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
 .vente-card-badge {
   display: inline-block;
   padding: 0.3rem 0.6rem;
@@ -47,7 +131,24 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
+}
+
+.vente-card-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  background: var(--accent-gold);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.vente-card-export-btn:hover {
+  filter: brightness(1.1);
 }
 
 .vente-card-heure {
